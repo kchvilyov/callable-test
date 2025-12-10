@@ -6,8 +6,6 @@ import org.junit.Test;
 
 
 import java.time.Instant;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static org.junit.Assert.assertTrue;
 
@@ -49,25 +47,6 @@ public class CallbackSchedulerTest {
             System.out.println("3" + result);
             result.wait();
             assertTrue(result.isDone);
-        }
-    }
-
-    static class CallbackSchedulerImpl implements CallbackScheduler {
-        @Override
-        public void schedule(Runnable callback, Instant when) {
-            System.out.println("Scheduling " + callback.getClass().getSimpleName());
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    callback.run();
-                }
-            }, 2000);
-        }
-
-        @Override
-        public void close() {
-            System.out.println("Closing " + this.getClass().getSimpleName());
         }
     }
 }
