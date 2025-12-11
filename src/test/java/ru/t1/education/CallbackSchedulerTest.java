@@ -93,4 +93,36 @@ public class CallbackSchedulerTest {
         scheduler.close(); // второй — не должен сломать
         // Если не упало — всё ок
     }
+
+    @Test
+    public void testMultipleTasks() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(3);
+        AtomicBoolean task1 = new AtomicBoolean(false);
+        AtomicBoolean task2 = new AtomicBoolean(false);
+        AtomicBoolean task3 = new AtomicBoolean(false);
+
+        Instant now = Instant.now();
+
+        scheduler.schedule(() -> {
+            task1.set(true);
+            latch.countDown();
+        }, now.plusSeconds(1));
+
+        scheduler.schedule(() -> {
+            task2.set(true);
+            latch.countDown();
+        }, now.plusSeconds(2));
+
+        scheduler.schedule(() -> {
+            task3.set(true);
+            latch.countDown();
+        }, now.plusSeconds(3));
+
+        boolean completed = latch.await(4, java.util.concurrent.TimeUnit.SECONDS);
+
+        assertTrue("All tasks should complete", completed);
+        assertTrue("Task 1 executed", task1.get());
+        assertTrue("Task 2 executed", task2.get());
+        assertTrue("Task 3 executed", task3.get());
+    }
 }
