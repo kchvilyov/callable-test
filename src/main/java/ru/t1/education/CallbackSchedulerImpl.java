@@ -13,7 +13,7 @@ public class CallbackSchedulerImpl implements CallbackScheduler {
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     @Override
-    public void schedule(Runnable callback, Instant when) throws InterruptedException {
+    public void schedule(Runnable callback, Instant when) {
         if (callback == null) throw new IllegalArgumentException("Callback cannot be null");
         if (when == null) throw new IllegalArgumentException("When cannot be null");
         if (closed.get()) throw new IllegalStateException("Scheduler is closed");
