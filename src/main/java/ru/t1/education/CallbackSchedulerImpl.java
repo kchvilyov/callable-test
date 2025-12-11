@@ -4,6 +4,11 @@ import java.time.Instant;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Потокобезопасный планировщик обратных вызовов.
+ * Задачи выполняются в отдельном потоке с задержкой.
+ * После вызова {@link #close()} новые задачи приниматься не будут.
+ */
 public class CallbackSchedulerImpl implements CallbackScheduler {
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread t = new Thread(r, "scheduler-worker");
