@@ -3,19 +3,12 @@ package ru.t1.education;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-
 import java.time.Instant;
-
+import java.util.concurrent.CountDownLatch;
 import static org.junit.Assert.assertTrue;
-
 
 public class CallbackSchedulerTest {
     private volatile CallbackScheduler scheduler;
-
-    private static class CallbackResult {
-        boolean isDone = false;
-    }
 
     @Before
     public void setUp() {
@@ -29,24 +22,39 @@ public class CallbackSchedulerTest {
 
     @Test
     public void testSimple() throws InterruptedException {
-        final CallbackResult result = new CallbackResult();
+        CountDownLatch latch = new CountDownLatch(1);
+        boolean[] isDone = {false}; // используем массив для доступа из лямбды
 
         scheduler.schedule(
                 () -> {
-                    synchronized (result) {
-                        System.out.println("1" + result);
-                        result.isDone = true;
-                        result.notify();
-                        System.out.println("2" + result);
-                    }
+                    isDone[0] = true;
+                    latch.countDown(); // сигнал о завершении
                 },
                 Instant.now().plusSeconds(2)
         );
 
-        synchronized (result) {
-            System.out.println("3" + result);
-            result.wait();
-            assertTrue(result.isDone);
-        }
+        // Ждём выполнения задачи (максимум 3 секунды)
+        boolean waited = latch.await(3, java.util.concurrent.TimeUnit.SECONDS);
+
+        assertTrue("Task did not complete in time", waited);
+        assertTrue("Callback was not executed", isDone[0]);
+    }
+
+    @Test
+    public void testExecutionTimeAccuracy() throws InterruptedException {
+        Instant start = Instant.now();
+        CountDownLatch latch = new CountDownLatch(1);
+
+        scheduler.schedule(
+                latch::countDown,
+                start.plusSeconds(2)
+        );
+
+        boolean completed = latch.await(3, java.util.concurrent.TimeUnit.SECONDS);
+        long duration = java.time.Duration.between(start, Instant.now()).toMillis();
+
+        assertTrue("Task should complete", completed);
+        assertTrue("Task executed too early", duration >= 1800); // >= 1.8s
+        assertTrue("Task took too long", duration <= 3000);     // <= 3s
     }
 }
