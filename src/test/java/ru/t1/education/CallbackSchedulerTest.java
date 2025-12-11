@@ -5,6 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.Assert.assertTrue;
 
 public class CallbackSchedulerTest {
@@ -56,5 +58,39 @@ public class CallbackSchedulerTest {
         assertTrue("Task should complete", completed);
         assertTrue("Task executed too early", duration >= 1800); // >= 1.8s
         assertTrue("Task took too long", duration <= 3000);     // <= 3s
+    }
+
+    @Test
+    public void testSchedulerClosed() throws Exception {
+        scheduler.close(); // закрываем ДО планирования
+
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicBoolean executed = new AtomicBoolean(false);
+
+        try {
+            scheduler.schedule(
+                    () -> {
+                        executed.set(true);
+                        latch.countDown();
+                    },
+                    Instant.now().plusSeconds(1)
+            );
+            // Если реализация выбрасывает IllegalStateException, это нормально
+            // Если нет — ждём и проверим, что задача НЕ выполнилась
+        } catch (IllegalStateException e) {
+            // Ожидаемое поведение: нельзя планировать после close()
+            return; // тест прошёл
+        }
+
+        // Если исключение не выброшено — убедимся, что задача не выполнилась
+        boolean completed = latch.await(2, java.util.concurrent.TimeUnit.SECONDS);
+        assertTrue("Task executed after scheduler was closed", !completed && !executed.get());
+    }
+
+    @Test
+    public void testCloseIsIdempotent() throws Exception {
+        scheduler.close(); // первый вызов
+        scheduler.close(); // второй — не должен сломать
+        // Если не упало — всё ок
     }
 }
