@@ -18,13 +18,13 @@ public class CallbackSchedulerImpl implements CallbackScheduler {
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     @Override
-    public void schedule(Runnable callback, Instant when) {
+    public ScheduledFuture<?> schedule(Runnable callback, Instant when) {
         if (callback == null) throw new IllegalArgumentException("Callback cannot be null");
         if (when == null) throw new IllegalArgumentException("When cannot be null");
         if (closed.get()) throw new IllegalStateException("Scheduler is closed");
 
         long delay = Math.max(0, when.toEpochMilli() - System.currentTimeMillis());
-        executor.schedule(callback, delay, TimeUnit.MILLISECONDS);
+        return executor.schedule(callback, delay, TimeUnit.MILLISECONDS);
     }
 
     @Override
