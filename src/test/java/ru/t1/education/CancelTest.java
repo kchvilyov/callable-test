@@ -1,11 +1,12 @@
 package ru.t1.education;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import java.time.Instant;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class CancelTest {
     @Test
@@ -25,7 +26,7 @@ public class CancelTest {
         // Ждём 6 секунд — если задача не выполнится, всё ок
         Thread.sleep(6000);
 
-        assertFalse("Task was cancelled and should not execute", executed.get());
+        assertFalse(executed.get(), "Task was cancelled and should not execute");
         scheduler.close();
     }
 }

@@ -1,24 +1,25 @@
 package ru.t1.education;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CallbackSchedulerTest {
     private volatile CallbackScheduler scheduler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         scheduler = new CallbackSchedulerImpl();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    public void tearDown() {
         scheduler.close();
     }
 
@@ -36,10 +37,10 @@ public class CallbackSchedulerTest {
         );
 
         // Ждём выполнения задачи (максимум 3 секунды)
-        boolean waited = latch.await(3, java.util.concurrent.TimeUnit.SECONDS);
+        boolean waited = latch.await(3, TimeUnit.SECONDS);
 
-        assertTrue("Task did not complete in time", waited);
-        assertTrue("Callback was not executed", isDone[0]);
+        assertTrue(waited, "Task did not complete in time");
+        assertTrue(isDone[0], "Callback was not executed");
     }
 
     @Test
@@ -55,9 +56,9 @@ public class CallbackSchedulerTest {
         boolean completed = latch.await(3, java.util.concurrent.TimeUnit.SECONDS);
         long duration = java.time.Duration.between(start, Instant.now()).toMillis();
 
-        assertTrue("Task should complete", completed);
-        assertTrue("Task executed too early", duration >= 1800); // >= 1.8s
-        assertTrue("Task took too long", duration <= 3000);     // <= 3s
+        assertTrue(completed, "Task should complete");
+        assertTrue(duration >= 1800, "Task executed too early"); // >= 1.8s
+        assertTrue(duration <= 3000,"Task took too long");     // <= 3s
     }
 
     @Test
@@ -83,12 +84,12 @@ public class CallbackSchedulerTest {
         }
 
         // Если исключение не выброшено — убедимся, что задача не выполнилась
-        boolean completed = latch.await(2, java.util.concurrent.TimeUnit.SECONDS);
-        assertTrue("Task executed after scheduler was closed", !completed && !executed.get());
+        boolean completed = latch.await(2, TimeUnit.SECONDS);
+        assertTrue(!completed && !executed.get(), "Task executed after scheduler was closed");
     }
 
     @Test
-    public void testCloseIsIdempotent() throws Exception {
+    public void testCloseIsIdempotent() {
         scheduler.close(); // первый вызов
         scheduler.close(); // второй — не должен сломать
         // Если не упало — всё ок
@@ -118,11 +119,11 @@ public class CallbackSchedulerTest {
             latch.countDown();
         }, now.plusSeconds(3));
 
-        boolean completed = latch.await(4, java.util.concurrent.TimeUnit.SECONDS);
+        boolean completed = latch.await(4, TimeUnit.SECONDS);
 
-        assertTrue("All tasks should complete", completed);
-        assertTrue("Task 1 executed", task1.get());
-        assertTrue("Task 2 executed", task2.get());
-        assertTrue("Task 3 executed", task3.get());
+        assertTrue(completed, "All tasks should complete");
+        assertTrue(task1.get(), "Task 1 executed");
+        assertTrue(task2.get(), "Task 2 executed");
+        assertTrue(task3.get(), "Task 3 executed");
     }
 }
