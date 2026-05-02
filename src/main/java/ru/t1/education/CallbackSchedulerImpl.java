@@ -24,7 +24,11 @@ public class CallbackSchedulerImpl implements CallbackScheduler {
         if (closed.get()) throw new IllegalStateException("Scheduler is closed");
 
         long delay = Math.max(0, when.toEpochMilli() - System.currentTimeMillis());
-        return executor.schedule(callback, delay, TimeUnit.MILLISECONDS);
+        try {
+            return executor.schedule(callback, delay, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            throw new IllegalStateException("Scheduler is closed", e);
+        }
     }
 
     @Override
