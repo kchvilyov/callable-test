@@ -7,7 +7,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CancelTest {
     @Test
@@ -28,5 +28,21 @@ public class CancelTest {
         } finally {
             scheduler.close();
         }
+    }
+
+    @Test
+    void testAutoCloseable() {
+        AtomicBoolean closed = new AtomicBoolean(false);
+
+        try (CallbackScheduler ignored = new CallbackSchedulerImpl() {
+            @Override
+            public void close() {
+                closed.set(true);
+                super.close();
+            }
+        }) {
+            // просто используем блок
+        }
+        assertTrue(closed.get(), "close() must be called implicitly by try-with-resources");
     }
 }
