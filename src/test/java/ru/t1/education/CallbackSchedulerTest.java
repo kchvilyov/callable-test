@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CallbackSchedulerTest {
@@ -29,17 +30,19 @@ class CallbackSchedulerTest {
 
     // 1. Простой позитивный сценарий: задача должна выполниться
     @Test
-    void testSimple() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
+    void testSimple() {
         AtomicBoolean done = new AtomicBoolean(false);
 
-        scheduler.schedule(() -> {
-            done.set(true);
-            latch.countDown();
-        }, Instant.now().plusSeconds(2));
+        scheduler.schedule(() ->
+            done.set(true)
+        , Instant.now().plusSeconds(2));
 
-        assertTrue(latch.await(3, TimeUnit.SECONDS), "Task did not complete in time");
-        assertTrue(done.get(), "Callback was not executed");
+        //ждём
+        await()
+                //самое большее 3 секунды
+                .atMost(3, TimeUnit.SECONDS)
+                //до тех пор, пока done не true
+                .until(done::get);
     }
 
     // 2. Проверка точности времени выполнения (с некоторым допуском)
