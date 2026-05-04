@@ -6,15 +6,8 @@ import org.junit.Test;
 
 
 import java.time.Instant;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static org.junit.Assert.assertTrue;
-
-interface CallbackScheduler extends AutoCloseable {
-    void schedule(Runnable callback, Instant when) throws InterruptedException;
-}
-
 
 public class CallbackSchedulerTest {
     private volatile CallbackScheduler scheduler;
@@ -53,25 +46,6 @@ public class CallbackSchedulerTest {
             System.out.println("3" + result);
             result.wait();
             assertTrue(result.isDone);
-        }
-    }
-
-    class CallbackSchedulerImpl implements CallbackScheduler {
-        @Override
-        public void schedule(Runnable callback, Instant when) throws InterruptedException {
-            System.out.println("Scheduling " + callback.getClass().getSimpleName());
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    callback.run();
-                }
-            }, 2000);
-        }
-
-        @Override
-        public void close() throws Exception {
-            System.out.println("Closing " + this.getClass().getSimpleName());
         }
     }
 }
