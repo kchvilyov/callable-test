@@ -28,6 +28,39 @@ class CallbackSchedulerTest {
         scheduler.close();
     }
 
+    @Test
+    void testChain() {
+        AtomicInteger step = new AtomicInteger(0);
+
+        System.out.println(step.get() + ") " + Instant.now().toString());
+        scheduler.schedule(() -> {
+                    step.incrementAndGet();
+                    System.out.println(step.get() + ") " + Instant.now().toString());
+                    scheduler.schedule(() -> {
+                                step.incrementAndGet();
+                                System.out.println(step.get() + ") " + Instant.now().toString());
+                                scheduler.schedule(() -> {
+                                            step.incrementAndGet();
+                                            System.out.println(step.get() + ") " + Instant.now().toString());
+                                        },
+                                        Instant.now().plusSeconds(3));
+                            },
+                            Instant.now().plusSeconds(2));
+                }
+                , Instant.now().plusSeconds(1));
+
+        System.out.println(step.get() + ") " + Instant.now().toString());
+        //ждём
+        await()
+                //самое большее 3 секунды
+                .atMost(1 + 2 + 3 + 1, TimeUnit.SECONDS)
+                //до тех пор, пока step меньше 2
+                .until(() -> step.get() > 2);
+
+        System.out.println(step.get() + ") " + Instant.now().toString());
+        assertEquals(3, step.get());
+    }
+
     // 1. Простой позитивный сценарий: задача должна выполниться
     @Test
     void testSimple() {
