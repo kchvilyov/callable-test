@@ -1,13 +1,12 @@
 package ru.t1.education;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CallbackSchedulerTest {
     private volatile CallbackScheduler scheduler;
@@ -16,12 +15,12 @@ public class CallbackSchedulerTest {
         boolean isDone = false;
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         scheduler = new CallbackSchedulerImpl();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         scheduler.close();
     }
