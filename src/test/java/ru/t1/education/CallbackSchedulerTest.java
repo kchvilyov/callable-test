@@ -28,6 +28,7 @@ class CallbackSchedulerTest {
         scheduler.close();
     }
 
+    //цепочка задач, где каждая следующая задача планируется из предыдущей
     @Test
     void testChain() {
         AtomicInteger step = new AtomicInteger(0);
@@ -43,22 +44,66 @@ class CallbackSchedulerTest {
                                             step.incrementAndGet();
                                             System.out.println(step.get() + ") " + Instant.now().toString());
                                         },
-                                        Instant.now().plusSeconds(3));
+                                        Instant.now().plusMillis(3));
                             },
-                            Instant.now().plusSeconds(2));
+                            Instant.now().plusMillis(2));
                 }
-                , Instant.now().plusSeconds(1));
+                , Instant.now().plusMillis(1));
 
         System.out.println(step.get() + ") " + Instant.now().toString());
         //ждём
         await()
                 //самое большее 3 секунды
-                .atMost(1 + 2 + 3 + 1, TimeUnit.SECONDS)
+                .atMost(1 + 2 + 3 + 1000, TimeUnit.MILLISECONDS)
                 //до тех пор, пока step меньше 2
                 .until(() -> step.get() > 2);
 
         System.out.println(step.get() + ") " + Instant.now().toString());
         assertEquals(3, step.get());
+    }
+
+    // механизм нескольких коллбеков, подписанных на завершение одной задачи
+    @Test
+    void testSeveralChains() {
+        AtomicInteger step = new AtomicInteger(0);
+
+        System.out.println(step.get() + ") " + Instant.now().toString());
+        scheduler.schedule(() -> {
+                    step.incrementAndGet();
+                    System.out.println(step.get() + ") " + Instant.now().toString());
+                    scheduler.schedule(() -> {
+                                step.incrementAndGet();
+                                System.out.println(step.get() + ") " + Instant.now().toString());
+                                scheduler.schedule(() -> {
+                                            step.incrementAndGet();
+                                            System.out.println(step.get() + ") " + Instant.now().toString());
+                                        },
+                                        Instant.now().plusMillis(4));
+                            },
+                            Instant.now().plusMillis(2));
+                    scheduler.schedule(() -> {
+                                step.incrementAndGet();
+                                System.out.println(step.get() + ") " + Instant.now().toString());
+                                scheduler.schedule(() -> {
+                                            step.incrementAndGet();
+                                            System.out.println(step.get() + ") " + Instant.now().toString());
+                                        },
+                                        Instant.now().plusMillis(5));
+                            },
+                            Instant.now().plusMillis(3));
+                }
+                , Instant.now().plusMillis(1));
+
+        System.out.println(step.get() + ") " + Instant.now().toString());
+        //ждём
+        await()
+                //самое большее 3 секунды
+                .atMost(1 + 2 + 3 + 4 + 5 + 1000, TimeUnit.MILLISECONDS)
+                //до тех пор, пока step меньше 2
+                .until(() -> step.get() >= 5);
+
+        System.out.println(step.get() + ") " + Instant.now().toString());
+        assertEquals(5, step.get());
     }
 
     // 1. Простой позитивный сценарий: задача должна выполниться
@@ -161,8 +206,7 @@ class CallbackSchedulerTest {
     // 7. Отмена задачи до её выполнения (через ScheduledFuture)
     @Test
     void testCancelTask() throws InterruptedException {
-        CallbackScheduler localScheduler = new CallbackSchedulerImpl();
-        try {
+        try (CallbackScheduler localScheduler = new CallbackSchedulerImpl()) {
             AtomicBoolean executed = new AtomicBoolean(false);
             CountDownLatch latch = new CountDownLatch(1);
 
@@ -178,16 +222,13 @@ class CallbackSchedulerTest {
             // Ждём 1 секунду — задача не должна успеть выполниться
             latch.await(1, TimeUnit.SECONDS);
             assertFalse(executed.get(), "Task was cancelled and should not execute");
-        } finally {
-            localScheduler.close();
         }
     }
 
     // 8. Отмена с прерыванием (cancel(true)) — задача спит, должна быть прервана
     @Test
     void testCancelWithInterrupt() throws InterruptedException {
-        CallbackScheduler localScheduler = new CallbackSchedulerImpl();
-        try {
+        try (CallbackScheduler localScheduler = new CallbackSchedulerImpl()) {
             AtomicBoolean interrupted = new AtomicBoolean(false);
             CountDownLatch started = new CountDownLatch(1);
             CountDownLatch finished = new CountDownLatch(1);
@@ -213,8 +254,6 @@ class CallbackSchedulerTest {
             // Задача должна завершиться с прерыванием почти сразу
             assertTrue(finished.await(1, TimeUnit.SECONDS), "Task should finish quickly after interrupt");
             assertTrue(interrupted.get(), "Thread should have been interrupted");
-        } finally {
-            localScheduler.close();
         }
     }
 
