@@ -7,7 +7,7 @@ import java.util.Random;
  Разделите массив на части и выполните поиск максимума в каждой части в отдельных потоках.
  Объедините результаты для получения общего максимума.
  */
-public class Main {
+public class MaxCalculate {
     static final int[] array = new int[100_000]; // достаточно большой массив
     static final int parts = 10;                // количество потоков
     static final int partLength = array.length / parts;
