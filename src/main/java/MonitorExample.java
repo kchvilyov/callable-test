@@ -22,6 +22,7 @@ public class MonitorExample {
         }
     }
 
+    //извещает ожидающие потоки о том, что условие (счётчик >= порог) выполнено, и те могут продолжить работу
     public void notifyWhenThreshold(int target) {
         synchronized (lock) {
             if (counter >= target) {

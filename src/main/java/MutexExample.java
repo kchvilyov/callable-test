@@ -5,7 +5,8 @@ public class MutexExample {
     private int counter = 0;
     //явное взаимоисключение для блокировки
     final ReentrantLock lock = new ReentrantLock();
-    private final Condition condition = lock.newCondition();      // условная очередь, привязанная к взаимоисключение
+    //управляемое состояние, привязанное к взаимоисключению
+    private final Condition condition = lock.newCondition();
 
     public void increment() {
         //захват взаимоисключения
@@ -23,7 +24,8 @@ public class MutexExample {
         lock.lock();
         try {
             while (counter < target) {
-                condition.await();   // освобождает взаимоисключение и ждёт сигнала
+                //освобождает взаимоисключение и ждёт сигнала на этом состоянии
+                condition.await();
             }
             System.out.println("Threshold reached: " + counter);
         } finally {
@@ -31,11 +33,12 @@ public class MutexExample {
         }
     }
 
+    //извещает ожидающие потоки о том, что условие (счётчик >= порог) выполнено, и те могут продолжить работу
     public void notifyWhenThreshold(int target) {
         lock.lock();
         try {
             if (counter >= target) {
-                //будит один поток, ждущий на этой condition
+                //будит один поток, ждущий на состоянии взаимоисключения
                 condition.signal();
             }
         } finally {
