@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+          background: white;
+          font-family: 'Courier New', 'Consolas', monospace;
+          font-size: 12px;
+          line-height: 1.4;
+          margin: 20px;
+        }
+        .arch {
+          border: 2px solid #222;
+          padding: 16px;
+          background: #fefefe;
+          border-radius: 10px;
+          display: inline-block;
+        }
+        .title {
+          text-align: center;
+          font-weight: bold;
+          margin-bottom: 16px;
+          font-size: 1.2em;
+        }
+        pre {
+          margin: 0;
+          font-family: inherit;
+          font-size: inherit;
+          white-space: pre;
+        }
+        .legend {
+          margin-bottom: 20px;
+          font-size: 12px;
+          background: #f0f0f0;
+          padding: 8px 15px;
+          border-radius: 6px;
+          display: inline-block;
+        }
+        .legend span {
+          display: inline-block;
+          width: 18px;
+          text-align: center;
+          margin-right: 6px;
+          font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="legend">
+    <b>Цвета (шестигранное строение):</b><br>
+    <span style="color:#0055ff;">■</span> синий – порты и адаптеры<br>
+    <span style="color:#00aa00;">■</span> зелёный – ядро (домен)<br>
+    <span style="color:#ff0000;">■</span> красный – направление зависимостей
+</div>
+
+<div class="arch">
+    <div class="title">Шестигранное строение (полный вид, исправленный)</div>
+    <pre>
+<span style="color:#0055ff;">                           ┌─────────────────────────────────────────────────┐</span>
+<span style="color:#0055ff;">                           │              ВНЕШНИЙ МИР (клиенты, БД, API, очередь)         │</span>
+<span style="color:#0055ff;">                           └─────────────────────────────────────────────────┘</span>
+<span style="color:#0055ff;">                                               │</span>
+<span style="color:#0055ff;">              ┌────────────────────────────────┼────────────────────────────────────────────┐</span>
+<span style="color:#0055ff;">              │                                │                                            │</span>
+<span style="color:#0055ff;">              │   <span style="color:#0055ff;">(входящий адаптер)</span>            <span style="color:#0055ff;">(входящий адаптер)</span>          <span style="color:#0055ff;">(исходящие адаптеры)</span>        │</span>
+<span style="color:#0055ff;">              │   <span style="color:#0055ff;">┌──────────────┐</span>               <span style="color:#0055ff;">┌──────────────┐</span>          <span style="color:#0055ff;">┌──────────────┐</span> <span style="color:#0055ff;">┌──────────────┐</span>    │</span>
+<span style="color:#0055ff;">              │   <span style="color:#0055ff;">│  REST       │</span>               <span style="color:#0055ff;">│  CLI        │</span>          <span style="color:#0055ff;">│  БД         │</span> <span style="color:#0055ff;">│  Очередь    │</span>    │</span>
+<span style="color:#0055ff;">              │   <span style="color:#0055ff;">│  Controller │</span>               <span style="color:#0055ff;">│  Command    │</span>          <span style="color:#0055ff;">│  Repository │</span> <span style="color:#0055ff;">│  Message    │</span>    │</span>
+<span style="color:#0055ff;">              │   <span style="color:#0055ff;">└─────┬──────┘</span>               <span style="color:#0055ff;">└─────┬──────┘</span>          <span style="color:#0055ff;">└──────┬─────┘</span> <span style="color:#0055ff;">└──────┬─────┘</span>    │</span>
+<span style="color:#0055ff;">              │         │                          │                         │           │          │</span>
+<span style="color:#ff0000;">              │   (вызов первичного порта)   (вызов первичного порта)    (реализуют вторичный порт) │</span>
+<span style="color:#ff0000;">              │         │                          │                         │           │          │</span>
+<span style="color:#ff0000;">              │         ▼                          ▼                         ▼           ▼          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">┌─────────────────────────────────────────────────────────────────────┐</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│                         ЯДРО (DOMAIN)                                │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│                                                                       │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  ┌───────────────────────────┐      ┌─────────────────────────────┐  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  │   Первичные порты (вход)  │      │  Вторичные порты (выход)    │  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  │  - processOrder()         │      │  - saveOrder()              │  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  │  - getUser()              │      │  - publishEvent()           │  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  └────────────┬──────────────┘      └──────────────┬──────────────┘  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│               │                                    │                │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│               ▼                                    ▼                │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  ┌───────────────────────────┐      ┌─────────────────────────────┐  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  │        Сущности           │◄─────│        Действия             │  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  │  - Order                  │      │  - CreateOrderUseCase      │  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  │  - User                   │      │  - PayOrderUseCase         │  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  │  - Product                │      │  - NotifyUserUseCase       │  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│  └───────────────────────────┘      └─────────────────────────────┘  │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">│                                                                       │</span>          │</span>
+<span style="color:#0055ff;">              │   <span style="color:#00aa00;">└─────────────────────────────────────────────────────────────────────┘</span>          │</span>
+<span style="color:#0055ff;">              │                                                                                       │</span>
+<span style="color:#ff0000;">              │   (адаптеры реализуют вторичные порты, но НЕ дублируются)                               │</span>
+<span style="color:#0055ff;">              └───────────────────────────────────────────────────────────────────────────────────────┘</span>
+
+<span style="color:#ff0000;">      Зависимости: адаптеры → порты → ядро. Ядро не знает об адаптерах, только о портах.</span>
+  </pre>
+    <p style="font-size: 12px; color: #555;">
+        <strong>Пояснение:</strong> В исправленной схеме каждый адаптер упомянут один раз:<br>
+        — <strong>REST Controller</strong> и <strong>CLI Command</strong> — это <strong>входящие (первичные) адаптеры</strong>, они вызывают первичные порты ядра.<br>
+        — <strong>БД Repository</strong> и <strong>Очередь Message</strong> — это <strong>исходящие (вторичные) адаптеры</strong>, они реализуют вторичные порты (стыки), определённые в ядре.<br>
+        — Дублирование устранено. Нижняя часть не повторяет адаптеры, а показывает структуру ядра и портов.
+    </p>
+</div>
+
+</body>
+</html>

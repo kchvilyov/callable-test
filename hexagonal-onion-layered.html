@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+          background: white;
+          font-family: 'Courier New', 'Consolas', monospace;
+          font-size: 14px;
+          line-height: 1.4;
+          margin: 20px;
+        }
+        .container {
+          display: flex;
+          flex-wrap: nowrap;
+          justify-content: flex-start;
+          gap: 30px;
+          overflow-x: auto;
+        }
+        .arch {
+          border: 1px solid #444;
+          padding: 12px;
+          background: #fefefe;
+          border-radius: 8px;
+          box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
+        }
+        .title {
+          text-align: center;
+          font-weight: bold;
+          margin-bottom: 12px;
+          font-size: 1.1em;
+        }
+        pre {
+          margin: 0;
+          font-family: inherit;
+          font-size: inherit;
+          white-space: pre;
+        }
+        .legend {
+          margin-bottom: 20px;
+          font-size: 13px;
+          background: #f0f0f0;
+          padding: 8px 15px;
+          border-radius: 6px;
+          display: inline-block;
+        }
+        .legend span {
+          display: inline-block;
+          width: 18px;
+          text-align: center;
+          margin-right: 6px;
+          font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="legend">
+    <b>Цвета отличий:</b><br>
+    <span style="color:#0055ff;">■</span> синий – порты и адаптеры (только шестигранная)<br>
+    <span style="color:#00aa00;">■</span> зелёный – ядро / домен<br>
+    <span style="color:#ff0000;">■</span> красный – направление зависимостей<br>
+    <span style="color:#aa44ff;">■</span> фиолетовый – слои и их границы
+</div>
+
+<div class="container">
+
+    <!-- ШЕСТИГРАННАЯ -->
+    <div class="arch">
+        <div class="title">Шестигранное строение</div>
+        <pre>
+<span style="color:#0055ff;">        [Входной порт]            [Выходной порт]</span>
+<span style="color:#0055ff;">              ▲                         ▲</span>
+<span style="color:#0055ff;">              │                         │</span>
+<span style="color:#0055ff;">        ┌─────┴─────┐             ┌─────┴─────┐</span>
+<span style="color:#0055ff;">        │  Адаптер  │             │  Адаптер  │</span>
+<span style="color:#0055ff;">        │   (UI)    │             │   (БД)    │</span>
+<span style="color:#0055ff;">        └─────┬─────┘             └─────┬─────┘</span>
+<span style="color:#0055ff;">              │                         │</span>
+<span style="color:#0055ff;">              ▼                         ▼</span>
+<span style="color:#00aa00;">        ┌─────────────────────────────────┐</span>
+<span style="color:#00aa00;">        │              ЯДРО               │</span>
+<span style="color:#00aa00;">        │    ┌──────────┐  ┌──────────┐   │</span>
+<span style="color:#00aa00;">        │    │ Сущности │  │ Действия │   │</span>
+<span style="color:#00aa00;">        │    └──────────┘  └──────────┘   │</span>
+<span style="color:#00aa00;">        └─────────────────────────────────┘</span>
+<span style="color:#ff0000;">              ▲                         ▲</span>
+<span style="color:#ff0000;">              └───────────┬─────────────┘</span>
+<span style="color:#ff0000;">                    зависимости внутрь</span>
+    </pre>
+    </div>
+
+    <!-- ЛУКОВАЯ -->
+    <div class="arch">
+        <div class="title">Луковое строение</div>
+        <pre>
+<span style="color:#aa44ff;">        ┌─────────────────────────────┐</span>
+<span style="color:#aa44ff;">        │       Внешний слой          │</span>
+<span style="color:#aa44ff;">        │    ┌───────────────────┐    │</span>
+<span style="color:#aa44ff;">        │    │ Стыки репозиториев│    │</span>
+<span style="color:#aa44ff;">        │    │  ┌─────────────┐  │    │</span>
+<span style="color:#aa44ff;">        │    │  │  Действия   │  │    │</span>
+<span style="color:#aa44ff;">        │    │  │  ┌───────┐  │  │    │</span>
+<span style="color:#00aa00;">        │    │  │  │ ДОМЕН │  │  │    │</span>
+<span style="color:#00aa00;">        │    │  │  │Сущности  │  │    │</span>
+<span style="color:#00aa00;">        │    │  │  └───────┘  │  │    │</span>
+<span style="color:#aa44ff;">        │    │  └─────────────┘  │    │</span>
+<span style="color:#aa44ff;">        │    └───────────────────┘    │</span>
+<span style="color:#aa44ff;">        └─────────────────────────────┘</span>
+<span style="color:#ff0000;">                      ▲</span>
+<span style="color:#ff0000;">                зависимости внутрь</span>
+    </pre>
+    </div>
+
+    <!-- МНОГОСЛОЙНАЯ -->
+    <div class="arch">
+        <div class="title">Многослойное строение</div>
+        <pre>
+<span style="color:#aa44ff;">        ┌─────────────────────────┐</span>
+<span style="color:#aa44ff;">        │   Слой представления    │</span>
+<span style="color:#aa44ff;">        │          (UI)           │</span>
+<span style="color:#aa44ff;">        └────────────┬────────────┘</span>
+<span style="color:#ff0000;">                     │ вызывает</span>
+<span style="color:#ff0000;">                     ▼</span>
+<span style="color:#aa44ff;">        ┌─────────────────────────┐</span>
+<span style="color:#aa44ff;">        │   Слой бизнес-логики    │</span>
+<span style="color:#aa44ff;">        └────────────┬────────────┘</span>
+<span style="color:#ff0000;">                     │ вызывает</span>
+<span style="color:#ff0000;">                     ▼</span>
+<span style="color:#aa44ff;">        ┌─────────────────────────┐</span>
+<span style="color:#aa44ff;">        │       Слой данных       │</span>
+<span style="color:#aa44ff;">        │        (БД, DAO)        │</span>
+<span style="color:#aa44ff;">        └─────────────────────────┘</span>
+<span style="color:#ff0000;">        зависимости только сверху вниз</span>
+    </pre>
+    </div>
+
+</div>
+</body>
+</html>
